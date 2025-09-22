@@ -1,0 +1,9 @@
+server:
+  error:
+    whitelabel:
+      enabled: false
+    include-message: always
+
+spring:
+  mvc:
+    throw-exception-if-no-handler: true

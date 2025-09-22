@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Sphere Tester</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+        body { margin: 24px; }
+        h1 { margin: 0 0 12px; font-size: 22px; }
+        .grid { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(220px, 1fr)); }
+        fieldset { border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
+        legend { padding: 0 6px; color: #444; }
+        label { display: grid; gap: 6px; font-size: 12px; color: #333; }
+        input, select, button {
+            padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;
+        }
+        button { cursor: pointer; }
+        .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .actions { display: flex; gap: 8px; margin-top: 12px; }
+        .out { margin-top: 18px; display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: right; }
+        th:first-child, td:first-child { text-align: left; }
+        .ok { color: #0a8; }
+        .err { color: #b00; white-space: pre-wrap; }
+        .pill { padding: 2px 8px; border-radius: 999px; border: 1px solid #ccc; font-size: 12px; }
+        .muted { color: #666; }
+        /* disabled styling */
+        .is-disabled { background: #f6f6f6; color: #888; border-color: #e0e0e0; }
+        .inline { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; }
+    </style>
+</head>
+<body>
+<h1>Sphere System — Quick Tester</h1>
+<div class="row muted">
+    <span class="pill">GET /api/prime/try-sphere</span>
+    <span>Toggle attributes with <b>Disable/Enable</b>, then click <b>Compute</b>.</span>
+</div>
+
+<form id="form" onsubmit="return false;">
+    <div class="grid">
+
+        <fieldset>
+            <legend>Essentials</legend>
+
+            <label>Power
+                <div class="inline">
+                    <input type="number" step="1" id="power" value="20">
+                    <button type="button" data-attr="power" class="toggle">Disable</button>
+                </div>
+            </label>
+
+            <label>Vitality
+                <div class="inline">
+                    <input type="number" step="1" id="vitality" value="18">
+                    <button type="button" data-attr="vitality" class="toggle">Disable</button>
+                </div>
+            </label>
+
+            <label>Self
+                <div class="inline">
+                    <input type="number" step="1" id="self" value="8">
+                    <button type="button" data-attr="self" class="toggle">Disable</button>
+                </div>
+            </label>
+
+            <label>Intent
+                <div class="inline">
+                    <input type="number" step="1" id="intent" value="12">
+                    <button type="button" data-attr="intent" class="toggle">Disable</button>
+                </div>
+            </label>
+            <div class="muted" style="margin-top:6px;">(Essentials must be enabled for sentient builds)</div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Sustenance</legend>
+            <label>Endurance
+                <div class="inline">
+                    <input type="number" step="1" id="endurance" value="16">
+                    <button type="button" data-attr="endurance" class="toggle">Disable</button>
+                </div>
+            </label>
+
+            <label>Mind
+                <div class="inline">
+                    <input type="number" step="1" id="mind" value="14">
+                    <button type="button" data-attr="mind" class="toggle">Disable</button>
+                </div>
+            </label>
+            <div class="muted" style="margin-top:6px;">At least one of Endurance or Mind must be enabled.</div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Other Axes</legend>
+
+            <label>Divine
+                <div class="inline">
+                    <input type="number" step="1" id="divine" value="0">
+                    <button type="button" data-attr="divine" class="toggle">Disable</button>
+                </div>
+            </label>
+
+            <label>Force
+                <div class="inline">
+                    <input type="number" step="1" id="force" value="-1">
+                    <button type="button" data-attr="force" class="toggle">Enable</button>
+                </div>
+            </label>
+
+            <label>Soul
+                <div class="inline">
+                    <input type="number" step="1" id="soul" value="-1">
+                    <button type="button" data-attr="soul" class="toggle">Enable</button>
+                </div>
+            </label>
+
+            <label>Spirit
+                <div class="inline">
+                    <input type="number" step="1" id="spirit" value="-1">
+                    <button type="button" data-attr="spirit" class="toggle">Enable</button>
+                </div>
+            </label>
+
+            <div class="muted" style="margin-top:6px;">Disabled attributes send <b>-1</b> to the API automatically.</div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Meta</legend>
+            <label>Role
+                <select id="role">
+                    <option>MAGE</option>
+                    <option>WARRIOR</option>
+                    <option>TANK</option>
+                    <option>HYBRID</option>
+                </select>
+            </label>
+            <label>Aspect
+                <select id="aspect">
+                    <option>MAGIC</option>
+                    <option>CHI</option>
+                    <option>ENERGY</option>
+                    <option>DIVINE</option>
+                </select>
+            </label>
+            <label>Character Type
+                <select id="characterType">
+                    <option>HUMANOID</option>
+                    <option>MAGIC</option>
+                    <option>BEAST</option>
+                    <option>MBEAST</option>
+                    <option>GOLEM</option>
+                    <option>DIV</option>
+                    <option>DIV2</option>
+                </select>
+            </label>
+            <div class="row">
+                <label class="row">
+                    <input type="checkbox" id="beyondMortal" />
+                    <span>Beyond Mortal</span>
+                </label>
+                <label class="row">
+                    <input type="checkbox" id="allowNonSentient" />
+                    <span>Allow Non-Sentient</span>
+                </label>
+            </div>
+            <label>Formula Version
+                <input type="text" id="formulaVersion" value="sphere-2.0" />
+            </label>
+            <label>System Version
+                <select id="systemVersion">
+                    <option value="sphere-2.0">Sphere 2.0</option>
+                    <option value="legacy-1.0">Legacy</option>
+                </select>
+            </label>
+        </fieldset>
+
+    </div>
+
+    <div class="actions">
+        <button id="btnCompute">Compute</button>
+        <button id="btnPresetMage" type="button">Preset: Mage Glass Cannon</button>
+        <button id="btnPresetTank" type="button">Preset: Tanky</button>
+        <button id="btnClear" type="button">Clear</button>
+    </div>
+</form>
+
+<div id="status" class="muted" style="margin-top:8px;"></div>
+
+<div class="out">
+    <div>
+        <h3>Inputs</h3>
+        <table id="inputsTbl"></table>
+    </div>
+    <div>
+        <h3>Outputs</h3>
+        <table id="outputsTbl"></table>
+        <div id="error" class="err"></div>
+    </div>
+</div>
+
+<script>
+    const $ = (id) => document.getElementById(id);
+
+    // Remember previous value when disabling so we can restore it on re-enable
+    function toggleAttr(btn) {
+        const id = btn.dataset.attr;
+        const input = $(id);
+        const isCurrentlyDisabled = input.readOnly;
+
+        if (!isCurrentlyDisabled) {
+            // Disable: store previous value, set -1, lock, grey
+            input.dataset.prev = input.value;
+            input.value = -1;
+            input.readOnly = true;
+            input.classList.add('is-disabled');
+            btn.textContent = 'Enable';
+        } else {
+            // Enable: restore previous (or 0 if none), unlock, un-grey
+            const prev = input.dataset.prev ?? '0';
+            input.value = prev;
+            input.readOnly = false;
+            input.classList.remove('is-disabled');
+            btn.textContent = 'Disable';
+        }
+    }
+
+    // Attach one handler for all toggle buttons (event delegation)
+    document.addEventListener('click', (e) => {
+        if (e.target.matches('button.toggle')) toggleAttr(e.target);
+    });
+
+    function readInputs() {
+        // If an input is readOnly, we’ve already set it to -1; just read the value
+        const num = (id) => +$(id).value;
+
+        return {
+            power: num("power"),
+            vitality: num("vitality"),
+            endurance: num("endurance"),
+            mind: num("mind"),
+            self: num("self"),
+            intent: num("intent"),
+            divine: num("divine"),
+            force: num("force"),
+            soul: num("soul"),
+            spirit: num("spirit"),
+            role: $("role").value,
+            aspect: $("aspect").value,
+            characterType: $("characterType").value,
+            beyondMortal: $("beyondMortal").checked,
+            allowNonSentient: $("allowNonSentient").checked,
+            formulaVersion: $("formulaVersion").value
+        };
+    }
+
+    function qs(params) {
+        const esc = encodeURIComponent;
+        return Object.entries(params)
+            .map(([k,v]) => `${esc(k)}=${esc(v)}`)
+            .join("&");
+    }
+
+    function renderTable(tbl, pairs) {
+        tbl.innerHTML = `
+        <tr><th>Key</th><th>Value</th></tr>
+        ${pairs.map(([k,v]) =>
+            `<tr><td>${k}</td><td>${v ?? ""}</td></tr>`
+        ).join("")}
+      `;
+    }
+
+    function showStatus(msg, ok = true) {
+        $("status").textContent = msg;
+        $("status").className = ok ? "ok" : "err";
+    }
+
+    async function compute() {
+        function essentialsDisabledAndNotAllowed(p) {
+            const essentials = [p.power, p.vitality, p.self, p.intent];
+            return essentials.some(v => Number(v) === -1) && !p.allowNonSentient;
+        }
+        const p = readInputs();
+        const systemVersion = $("systemVersion").value;
+        let url, formulaVersion;
+        if (systemVersion === "sphere-2.0") {
+            url = "/api/prime/try-sphere?" + qs({
+                power: p.power, vitality: p.vitality, endurance: p.endurance, mind: p.mind,
+                self: p.self, intent: p.intent, divine: p.divine,
+                force: p.force, soul: p.soul, spirit: p.spirit,
+                role: p.role, aspect: p.aspect, formulaVersion: systemVersion,
+                beyondMortal: p.beyondMortal, characterType: p.characterType, allowNonSentient: p.allowNonSentient
+            });
+            formulaVersion = "sphere-2.0";
+        } else {
+            url = "/api/prime/compute";
+            formulaVersion = "legacy-1.0";
+        }
+
+        renderTable($("inputsTbl"), Object.entries({
+            role: p.role, aspect: p.aspect, characterType: p.characterType,
+            power: p.power, vitality: p.vitality, endurance: p.endurance, mind: p.mind,
+            self: p.self, intent: p.intent, divine: p.divine, force: p.force, soul: p.soul, spirit: p.spirit,
+            beyondMortal: p.beyondMortal, allowNonSentient: p.allowNonSentient, formulaVersion: formulaVersion
+        }));
+
+        $("error").textContent = "";
+        showStatus("Computing…");
+        try {
+            let data;
+            if (systemVersion === "sphere-2.0") {
+                const res = await fetch(url);
+                data = await res.json();
+                if (!res.ok) {
+                    $("error").textContent = data ? JSON.stringify(data, null, 2) : "Unknown error";
+                    showStatus("Error", false);
+                    $("outputsTbl").innerHTML = "";
+                    return;
+                }
+                data = data.output || {};
+            } else {
+                // Legacy: POST to /api/prime/compute
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        attrs: {
+                            power: p.power, vitality: p.vitality, endurance: p.endurance, mind: p.mind,
+                            self: p.self, intent: p.intent, divine: p.divine,
+                            force: p.force, soul: p.soul, spirit: p.spirit
+                        },
+                        role: p.role, aspect: p.aspect, flavor: "LEGACY",
+                        fullTank: false, formulaVersion: formulaVersion, beyondMortal: p.beyondMortal
+                    })
+                });
+                data = await res.json();
+                if (!res.ok) {
+                    $("error").textContent = data ? JSON.stringify(data, null, 2) : "Unknown error";
+                    showStatus("Error", false);
+                    $("outputsTbl").innerHTML = "";
+                    return;
+                }
+                data = data.output || {};
+            }
+            renderTable($("outputsTbl"), [
+                ["baseAttack", data.baseAttack],
+                ["baseDefense", data.baseDefense],
+                ["HP", data.hp],
+                ["SP", data.sp],
+                ["MP", data.mp],
+                ["DP", data.dp],
+                ["FP (Force)", data.fp],
+                ["SL (Soul)", data.sl],
+                ["SPR (Spirit)", data.spr],
+                ["HP/hr", data.hpPerHour],
+                ["SP/hr", data.spPerHour],
+                ["MP/hr", data.mpPerHour],
+                ["DP/hr", data.dpPerHour],
+                ["FP/hr", data.fpPerHour],
+                ["SL/hr", data.slPerHour],
+                ["SPR/hr", data.sprPerHour],
+                ["formulaVersion", data.formulaVersion]
+            ]);
+            showStatus("OK ✓");
+        } finally {
+            if ($("status").textContent === "Computing…") {
+                showStatus("");
+            }
+        }
+    }
+
+    $("btnCompute").addEventListener("click", compute);
+
+    $("btnPresetMage").addEventListener("click", () => {
+        $("role").value = "MAGE";
+        $("aspect").value = "MAGIC";
+        $("characterType").value = "HUMANOID";
+        $("beyondMortal").checked = false;
+
+        const set = (id, v, enabled=true) => {
+            const input = $(id);
+            const btn = document.querySelector(`button.toggle[data-attr="${id}"]`);
+            input.readOnly = false; input.classList.remove('is-disabled'); btn.textContent = 'Disable';
+            input.value = v;
+            if (!enabled) { toggleAttr(btn); } // will set to -1 & lock
+        };
+
+        set("power", 650);
+        set("vitality", 555);
+        set("endurance", 560);
+        set("mind", 700);
+        set("self", 375);
+        set("intent", 425);
+        set("divine", -1, false);
+        set("force", -1, false);
+        set("soul", -1, false);
+        set("spirit", -1, false);
+
+        compute();
+    });
+
+    $("btnPresetTank").addEventListener("click", () => {
+        $("role").value = "TANK";
+        $("aspect").value = "ENERGY";
+        $("characterType").value = "HUMANOID";
+        $("beyondMortal").checked = false;
+
+        const set = (id, v, enabled=true) => {
+            const input = $(id);
+            const btn = document.querySelector(`button.toggle[data-attr="${id}"]`);
+            input.readOnly = false; input.classList.remove('is-disabled'); btn.textContent = 'Disable';
+            input.value = v;
+            if (!enabled) { toggleAttr(btn); }
+        };
+
+        set("power", 22);
+        set("vitality", 26);
+        set("endurance", 24);
+        set("mind", 0, false);
+        set("self", 14);
+        set("intent", 9);
+        set("divine", 0, true);
+        set("force", 0, false);
+        set("soul", 0, false);
+        set("spirit", 0, false);
+
+        compute();
+    });
+
+    $("btnClear").addEventListener("click", () => {
+        // Reset all number inputs to their default values
+        $("power").value = 20;
+        $("vitality").value = 18;
+        $("endurance").value = 16;
+        $("mind").value = 14;
+        $("self").value = 8;
+        $("intent").value = 12;
+        $("divine").value = 0;
+        $("force").value = -1;
+        $("soul").value = -1;
+        $("spirit").value = -1;
+        // Reset selects
+        $("role").value = "MAGE";
+        $("aspect").value = "MAGIC";
+        $("characterType").value = "HUMANOID";
+        // Reset checkboxes
+        $("beyondMortal").checked = false;
+        $("allowNonSentient").checked = false;
+        // Reset formula version
+        $("formulaVersion").value = "sphere-2.0";
+        // Remove disabled/readOnly state from all inputs
+        ["power","vitality","endurance","mind","self","intent","divine","force","soul","spirit"].forEach(id => {
+            const input = $(id);
+            input.readOnly = false;
+            input.classList.remove('is-disabled');
+            const btn = document.querySelector(`button.toggle[data-attr="${id}"]`);
+            if (btn) btn.textContent = 'Disable';
+        });
+        // Clear outputs and status
+        $("inputsTbl").innerHTML = "";
+        $("outputsTbl").innerHTML = "";
+        $("error").textContent = "";
+        showStatus("");
+    });
+</script>
+</body>
+</html>
